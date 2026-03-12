@@ -1,175 +1,141 @@
-## Exercise 1 – k-Anonymity and Variants (Manual & Conceptual Answers)
+## Brief Run Manual
 
-### 1. How to run the code
+1. Open a terminal in the project folder:
+   - `C:/Users/User/Desktop/privacy`
 
-- **Run the main script** (demonstration for Exercise 1, k-anonymity on `adult_small`):
+2. Run the main script:
+   - `python e1.py`
 
-```bash
-python e1.py
-```
+3. (Optional) Run tests:
+   - `pytest e1.py`
 
-This will:
-- Load `adult_with_pii.csv`.
-- Construct `adult_small` as the first 100 rows with columns `Education`, `Marital Status`, `Target`.
-- Print the head of `adult_small`.
-- Check and print whether `adult_small` satisfies k-anonymity for `k = 1..10` using quasi-identifiers `["Education", "Marital Status"]`.
+## Exercise 1
 
-- **Run the tests** (requires `pytest` to be installed):
+Run for Exercise 1:
 
-```bash
-pytest e1.py
-```
+- `python e1.py`
+- This prints the `adult_small` preview and k-anonymity results for `k = 1..10`.
 
-This executes all test cases defined at the bottom of `e1.py`.
+• Which columns of adult_small are identifiers, which are quasi-identifiers, and which are
+sensitive attributes?
 
-### 2. How to interpret the outputs
+- `adult_small` columns: `Education`, `Marital Status`, `Target`
+- Identifiers: none
+- Quasi-identifiers: `Education`, `Marital Status`
+- Sensitive attribute: `Target`
 
-- **From `python e1.py`**:
-  - The printed table labeled `adult_small head` shows sample rows of the subset used in the exercise.
-  - The subsequent lines `k = X: True/False` indicate whether `adult_small` is k-anonymous for that value of `k` with respect to the quasi-identifiers `Education` and `Marital Status`.
-    - `True` means every equivalence class (group of records sharing the same values of the quasi-identifiers) has at least `k` records.
-    - `False` means there exists at least one equivalence class of size `< k`.
+• For which k ∈ [1, 10] does adult_small satisfy k-anonymity? For the cases that do not
+satisfy k-anonymity, why not?
 
-- **From `pytest e1.py`**:
-  - All tests **passing** means:
-    - `is_k_anonymous` behaves correctly on normal cases and edge cases.
-    - `suppress_count` deletes exactly the rows needed so that all remaining equivalence classes have size at least `k`.
-    - `generalize_categorical` correctly generalizes and suppresses `adult_small` so that the resulting dataset is 2-anonymous.
-  - A failing test will show which scenario (function and input shape) violates the expected behavior.
+- Satisfies k-anonymity for: `k = 1`
+- Does not satisfy k-anonymity for: `k = 2, 3, 4, 5, 6, 7, 8, 9, 10`
+- Why not for `k > 1`: at least one equivalence class defined by (`Education`, `Marital Status`)
+  has size `1`, so the minimum class size is smaller than any `k > 1`.
 
-### 3. Test case rationale
 
-The tests are designed to cover both **typical** and **edge** scenarios for each implemented function:
+## Exercise 2
 
-- **`is_k_anonymous` tests**:
-  - `test_is_k_anonymous_simple_true`: simple dataset where each quasi-identifier combination appears at least twice. Verifies the positive case for `k = 2`.
-  - `test_is_k_anonymous_simple_false`: includes a combination of quasi-identifiers that appears only once. Verifies the negative case where k-anonymity is violated.
-  - `test_is_k_anonymous_empty_qis`: covers the special case where the list of quasi-identifiers is empty. Here, all rows form a single equivalence class; we check behavior for `k` equal to and greater than the dataset size.
-  - `test_is_k_anonymous_uses_all_rows_with_nans`: ensures that rows containing `NaN` in quasi-identifiers are still counted toward equivalence classes.
-  - `test_is_k_anonymous_invalid_k_raises`: checks input validation for `k <= 0`, which must raise a `ValueError`.
-  - `test_is_k_anonymous_missing_column_raises`: verifies that missing quasi-identifier columns trigger a `KeyError`.
-  - `test_is_k_anonymous_empty_df_is_never_k_anonymous`: tests the behavior on an empty DataFrame.
-  - `test_is_k_anonymous_on_adult_small`: uses the actual `adult_small` subset from the exercise to confirm that it is 1-anonymous but not 2-anonymous for quasi-identifiers `Education` and `Marital Status`.
+Run test for Exercise 2:
 
-  These tests together cover:
-  - Normal use (k-anonymous and not k-anonymous).
-  - Edge conditions: empty QI list, empty dataset, NaNs.
-  - Invalid inputs: wrong `k`, missing columns.
-  - Realistic dataset: `adult_small`.
+- `python -m pytest e1.py -k generalize_categorical -q`
 
-- **`suppress_count` tests**:
-  - `test_suppress_count_removes_small_equivalence_classes`: checks that the function suppresses only those rows in small equivalence classes, leaving intact classes where `size >= k`.
-  - `test_suppress_count_empty_qis_behavior`: exercises the special case where there are no quasi-identifiers. The entire dataset is one equivalence class, so:
-    - For `k <= len(df)`, all rows must be kept.
-    - For `k > len(df)`, all rows must be suppressed.
+• For which rows is a homogeneity attack possible, and why?
 
-  Together these verify both normal grouping behavior and the empty-QI corner case.
+- A homogeneity attack is possible for rows that belong to an equivalence class (after
+  generalization and suppression for `k = 2`) where all records have the same `Target` value.
+- In those classes, knowing a person's generalized quasi-identifiers (`Education`, `Marital Status`)
+  reveals their sensitive value (`Target`) with certainty.
+- This happens because k-anonymity protects identity by group size, but does not guarantee
+  diversity of the sensitive attribute inside each group.
 
-- **`generalize_categorical` tests**:
-  - `test_generalize_categorical_produces_2_anonymous_dataset`: runs the complete generalization + suppression pipeline on `adult_small` and then calls `is_k_anonymous(2, ["Education", "Marital Status"], gen_df)`. This checks the overall requirement for Task 2: the output must be 2-anonymous.
+## Exercise 3
 
-This combination of tests provides **high coverage**:
-- Every implemented function is executed.
-- Branches for valid/invalid arguments and corner cases are tested.
-- The functions are also exercised on the actual exercise dataset, confirming realistic behavior beyond synthetic toy examples.
+Run test for Exercise 3:
 
----
+- `python -m pytest e1.py -k generalize_numeric -q`
 
-## Conceptual Answers
+## Exercise 4
 
-### 4. Identifiers, quasi-identifiers, and sensitive attributes (Task 1)
+Run test for Exercise 4:
 
-We work with:
+- `python -m pytest e1.py -k make_adult_k_anonymous -q`
 
-- Full dataset: `adult_with_pii.csv`.
-- Subset for Exercise 1:
+• How many rows would we have to suppress in addition to the generalization to achieve
+k = 3 and k = 7?
 
-```text
-adult_small = first 100 rows of adult_with_pii with columns
-              ["Education", "Marital Status", "Target"]
-```
+Using QIs `["Zip", "Sex", "Age"]` and a practical setting `zip_digits = 2`, `age_digits = 2`:
 
-- **Identifiers in `adult_small`**:
-  - None. Direct identifiers such as `Name`, `DOB`, `SSN`, `Zip` are present in the full dataset but are **not** included in `adult_small`.
+- For `k = 3`: suppress **1** row.
+- For `k = 7`: suppress **488** rows.
 
-- **Quasi-identifiers in `adult_small`**:
-  - `Education`
-  - `Marital Status`
+• How many digits of Zip and Age can/should you generalize, and how does this affect the
+number of suppressed rows?
 
-  These are demographic attributes which, while not uniquely identifying by themselves, may be linkable to external data and thus enable re-identification when combined.
+- Less generalization -> more suppression.
+- More generalization -> fewer suppressed rows, but lower data utility.
+- Example from the computed results:
+  - `zip_digits = 2`, `age_digits = 2` -> suppression is low (`1` for `k=3`, `488` for `k=7`).
+  - `zip_digits = 3`, `age_digits = 2` -> suppression is `0` for both `k=3` and `k=7`, but with stronger information loss.
 
-- **Sensitive attribute in `adult_small`**:
-  - `Target` (income class, typically `<=50K` or `>50K`).
+## Exercise 5
 
-  We treat income category as sensitive information that should not be easily inferred, even if an attacker can identify the record’s equivalence class.
+Run test for Exercise 5:
 
-### 5. For which k ∈ [1, 10] does `adult_small` satisfy k-anonymity? (Task 1)
+- `python -m pytest e1.py -k l_diverse -q`
 
-We consider k-anonymity with respect to quasi-identifiers:
+## Exercise 6
 
-```text
-qis = ["Education", "Marital Status"]
-```
+Assume that the quasi-identifiers in the adult dataset are `Education`, `Marital Status`, and
+`Sex`, and that the sensitive column is `DOB`.
 
-Result:
+• Is the adult dataset `-diverse?
 
-- For **k = 1**:
-  - `adult_small` **does satisfy** 1-anonymity.
-  - Reason: every individual record belongs to some equivalence class of size at least 1 (trivially true for any non-empty dataset).
+- For `l = 2`, the adult dataset is **not** 2-diverse under both variants:
+  - probabilistic 2-diversity: **False**
+  - entropy 2-diversity: **False**
 
-- For **k = 2, 3, ..., 10**:
-  - `adult_small` **does not satisfy** k-anonymity.
-  - Reason: there exists at least one combination of (`Education`, `Marital Status`) that appears **only once** among the first 100 rows. This smallest equivalence class has size 1, which is `< k` for any `k > 1`. Therefore, the k-anonymity condition fails for all k in `{2, 3, ..., 10}`.
+• If not, which quasi-identifier groups are preventing `-diversity?
 
-### 6. Generalization and suppression for k = 2 (Task 2)
+- The violating groups are QI groups where `DOB` is too concentrated (often only one row).
+- In this dataset, the violating groups are singleton groups (size 1), for example:
+  - `("Assoc-voc", "Married-AF-spouse", "Male")`
+  - `("Preschool", "Divorced", "Male")`
+  - `("Preschool", "Separated", "Female")`
+  - `("Preschool", "Widowed", "Male")`
+  - `("Prof-school", "Married-spouse-absent", "Female")`
+  - `("Some-college", "Married-AF-spouse", "Male")`
+- For each such group, one `DOB` value has probability 1 and entropy 0, so both 2-diversity
+  conditions fail.
 
-In Task 2, we assume that **`Target` is not a quasi-identifier**. We generalize categorical attributes and then suppress rows (delete records) to achieve 2-anonymity.
+• What is the difference between probabilistic and entropy `-diversity, if any?
 
-- **Generalization rules applied to `adult_small`**:
-  - `Education` is generalized to two categories:
-    - `< HS`: all education levels below `HS-grad` (e.g. `Preschool`, `1st-4th`, ..., `12th`).
-    - `>= HS`: `HS-grad` and all higher education levels (e.g. `Some-college`, `Bachelors`, `Masters`, `Doctorate`, etc.).
-  - `Marital Status` is generalized to:
-    - `Married`: `Married-civ-spouse`, `Married-spouse-absent`, `Married-AF-spouse`.
-    - `Not Married`: any other marital status (e.g. `Never-married`, `Divorced`, `Separated`, `Widowed`, etc.).
+- **Probabilistic l-diversity** checks only the largest sensitive-value probability in each group:
+  `max_i p_i <= 1/l`.
+- **Entropy l-diversity** uses the full sensitive-value distribution via entropy:
+  `H(group) >= ln(l)`.
+- In this dataset for `l = 2`, both give the same conclusion (not 2-diverse) because singleton
+  groups force `p_max = 1` and `H = 0`.
 
-- **Suppression rule**:
-  - After generalization, we compute equivalence classes based on the generalized quasi-identifiers:
+## Exercise 7
 
-    ```text
-    qis = ["Education", "Marital Status"]
-    ```
+Run test for Exercise 7:
 
-  - Any equivalence class whose size is **less than 2** is removed by deleting all rows in that class.
-  - The resulting dataset is therefore **2-anonymous** with respect to the generalized `Education` and `Marital Status`.
+- `python -m pytest e1.py -k "max_l or generalize_full_adult_categorical" -q`
 
-### 7. For which rows is a homogeneity attack possible, and why? (Task 2)
+• What is the largest ` for the generalized dataset for probabilistic `-diversity and entropy
+`-diversity?
 
-After applying `generalize_categorical()` and suppression for `k = 2`:
+Using the generalized full dataset (Question 2 rules) with QIs
+`["Education", "Marital Status", "Sex"]` and sensitive column `DOB`:
 
-- Each remaining record belongs to an equivalence class defined by the **generalized** quasi-identifiers:
+- Largest `l` for probabilistic l-diversity: **97**
+- Largest `l` for entropy l-diversity: **193**
 
-```text
-Education ∈ { "< HS", ">= HS" }
-Marital Status ∈ { "Married", "Not Married" }
-```
+• Discuss the difference between probabilistic `-diversity and entropy `-diversity. Why does
+one of them appear more “diverse” than the other?
 
-- A **homogeneity attack is possible** for those rows whose equivalence class has **only one distinct `Target` value**.
-
-Concretely:
-
-- Suppose, for some generalized group (for example, `Education = ">= HS"`, `Marital Status = "Married"`), every remaining record in that group has `Target = "<=50K"`. Then:
-  - An attacker who knows that an individual belongs to this group (for example, knows they are married and have at least high-school education) can infer with **certainty** that this individual’s income class is `<=50K`.
-  - Even though the group has at least 2 members (satisfies 2-anonymity), the **sensitive attribute is homogeneous** in this equivalence class.
-
-The same reasoning applies to any group where all records share `Target = ">50K"`.
-
-Therefore:
-
-- **Rows vulnerable to homogeneity attack**:
-  - All rows that belong to an equivalence class (defined by generalized `Education` and `Marital Status`) in which `Target` is **constant** (only one unique value).
-
-- **Why**:
-  - k-anonymity protects against identity disclosure but **does not** guarantee diversity of sensitive attributes within a group.
-  - When a k-anonymous equivalence class is homogeneous in the sensitive attribute, knowing that someone is in that class reveals their sensitive attribute value.
-
+- Probabilistic l-diversity is controlled by only the most frequent sensitive value (`p_max`).
+- Entropy l-diversity uses the whole sensitive-value distribution, not just the maximum.
+- Because entropy includes the full distribution, it can rate a group as more diverse even when
+  one value is somewhat dominant, as long as many other values still contribute to entropy.
+- That is why entropy gives a higher maximum `l` here (**193**) than probabilistic (**97**).
