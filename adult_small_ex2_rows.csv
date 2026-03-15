@@ -1,0 +1,101 @@
+Education,Marital Status,Target
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+< HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+< HS,Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,>50K
+>= HS,Married,>50K
+>= HS,Married,>50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+< HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+< HS,Married,<=50K
+>= HS,Not Married,>50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+< HS,Married,<=50K
+< HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+< HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,>50K
+>= HS,Married,<=50K
+< HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+< HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+< HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+< HS,Married,<=50K
+< HS,Not Married,<=50K
+< HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,<=50K
+>= HS,Not Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Married,<=50K
+< HS,Not Married,<=50K
+>= HS,Not Married,>50K
+>= HS,Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K
+>= HS,Married,<=50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Married,>50K
+>= HS,Married,>50K
+>= HS,Not Married,<=50K
+>= HS,Not Married,<=50K

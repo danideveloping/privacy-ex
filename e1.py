@@ -7,7 +7,7 @@ import pytest
 
 ADULT_DF = pd.read_csv("adult_with_pii.csv")
 adult_small = ADULT_DF.loc[:99, ["Education", "Marital Status", "Target"]].copy()
-
+print(adult_small)
 #EX1
 def is_k_anonymous(k, qis, df):
     """Return True iff ``df`` satisfies k-anonymity for the given quasi-identifiers.
