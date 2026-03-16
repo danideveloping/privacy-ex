@@ -31,6 +31,11 @@ satisfy k-anonymity, why not?
   has size `1`, so the minimum class size is smaller than any `k > 1`.
 The combination that appears only once for example is Bachelors,Separated 
 
+Test rationale (Exercise 1):
+- We test normal behavior (`k=1..10` style usage) and strict edge cases for `is_k_anonymous`.
+- Edge cases include invalid `k`, missing columns, `None` dataframe, empty dataframe, and no-QI mode (`qis=[]`).
+- This gives branch coverage for validation, grouping logic, and the special global-equivalence-class rule.
+
 ## Exercise 2
 
 Run test for Exercise 2:
@@ -45,11 +50,21 @@ Run test for Exercise 2:
 - This happens because k-anonymity protects identity by group size, but does not guarantee diversity of the sensitive attribute inside each group.
 < HS,Married is an example where the target and the quasi identifier (after generalization and suppresion) are the same so if the attacker knows the group of the person he can directly figure out the target because there isnt another option in target
 
+Test rationale (Exercise 2):
+- We test the end-to-end pipeline: categorical generalization + suppression + final k-anonymity check.
+- We also test suppression helper behavior with small synthetic data to verify mask correctness, suppressed row count, and kept rows.
+- Edge cases include invalid parameters, missing QIs, empty dataframes, and no-QI behavior.
+
 ## Exercise 3
 
 Run test for Exercise 3:
 
 - `python -m pytest e1.py -k generalize_numeric -q`
+
+Test rationale (Exercise 3):
+- We test representative numeric examples for `n=0`, mid-level generalization, and stronger generalization.
+- We include validation edge cases (`n<0`, non-numeric zip input) and integer-like string input.
+- This covers both successful transformations and input-error branches.
 
 ## Exercise 4
 
@@ -74,11 +89,21 @@ number of suppressed rows?
   - `zip_digits = 2`, `age_digits = 2` -> suppression is low (`1` for `k=3`, `488` for `k=7`).
   - `zip_digits = 3`, `age_digits = 2` -> suppression is `0` for both `k=3` and `k=7`, but with stronger information loss.
 
+Test rationale (Exercise 4):
+- We test consistency between returned suppression count and actual rows removed.
+- We test that output data is truly k-anonymous on QIs `["Zip", "Sex", "Age"]`.
+- We include parameter validation edge cases (`zip_digits<0`, `age_digits<0`) and suppression helper edge cases.
+
 ## Exercise 5
 
 Run test for Exercise 5:
 
 - `python -m pytest e1.py -k l_diverse -q`
+
+Test rationale (Exercise 5):
+- We test both probabilistic and entropy l-diversity on a balanced synthetic distribution where expected outcomes are known.
+- We add edge-case tests for invalid `l`, invalid variant, missing sensitive column, missing QIs, `None` dataframe, and empty dataframe.
+- We also test `qis=[]` to confirm the whole-table single-group behavior.
 
 ## Exercise 6
 
@@ -134,3 +159,8 @@ Using the generalized full dataset (Question 2 rules) with QIs
 - Because entropy includes the full distribution, it can rate a group as more diverse even when
   one value is somewhat dominant, as long as many other values still contribute to entropy.
 - That is why entropy gives a higher maximum `l` here (**193**) than probabilistic (**97**).
+
+Test rationale (Exercise 7):
+- We test `max_l` on a controlled example and cross-check with `is_l_diverse` at the returned l-values.
+- We test both variants (`probabilistic`, `entropy`) and the generalized full-dataset category mapping.
+- Edge cases include invalid variant, missing columns, `None` dataframe, empty dataframe, and no-QI mode.

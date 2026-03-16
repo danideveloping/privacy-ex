@@ -131,6 +131,22 @@ def test_generalize_categorical_produces_2_anonymous_dataset():
     assert is_k_anonymous(2, qis, gen_df)
 
 
+def test_is_k_anonymous_edge_cases_and_validation():
+    df = pd.DataFrame({"A": [1, 1], "B": [2, 2]})
+
+    with pytest.raises(ValueError):
+        is_k_anonymous(0, ["A"], df)
+    with pytest.raises(ValueError):
+        is_k_anonymous(2, ["A"], None)
+    with pytest.raises(KeyError):
+        is_k_anonymous(1, ["missing"], df)
+
+    # No QIs means one global class containing all rows.
+    assert is_k_anonymous(2, [], df)
+    assert not is_k_anonymous(3, [], df)
+    assert not is_k_anonymous(1, ["A"], pd.DataFrame(columns=["A", "B"]))
+
+
 #EX3
 def generalize_numeric(zip, n):
     """Generalize a numeric value by replacing the last ``n`` digits with zeros."""
@@ -152,6 +168,14 @@ def test_generalize_numeric_examples():
     assert generalize_numeric(47401, 0) == 47401
     assert generalize_numeric(47401, 2) == 47400
     assert generalize_numeric(47401, 4) == 40000
+
+
+def test_generalize_numeric_validation_and_string_input():
+    assert generalize_numeric("47401", 2) == 47400
+    with pytest.raises(ValueError):
+        generalize_numeric(47401, -1)
+    with pytest.raises(ValueError):
+        generalize_numeric("zip", 1)
 
 #EX4
 def make_adult_k_anonymous(k, zip_digits, age_digits):
@@ -181,6 +205,41 @@ def test_make_adult_k_anonymous_matches_suppress_count():
     out_df, suppressed = make_adult_k_anonymous(k, zip_digits=2, age_digits=1)
     assert suppressed == (len(ADULT_DF) - len(out_df))
     assert is_k_anonymous(k, ["Zip", "Sex", "Age"], out_df)
+
+
+def test_suppression_helpers_edge_cases_and_consistency():
+    df = pd.DataFrame(
+        {
+            "QI1": ["a", "a", "b"],
+            "QI2": ["x", "x", "y"],
+            "S": [1, 2, 3],
+        }
+    )
+
+    mask = _suppression_mask(2, ["QI1", "QI2"], df)
+    assert mask.tolist() == [True, True, False]
+    assert suppress_count(2, ["QI1", "QI2"], df) == 1
+    kept = suppress_rows(2, ["QI1", "QI2"], df)
+    assert len(kept) == 2
+
+    # No QIs: keep all rows if len(df) >= k, otherwise suppress all.
+    assert _suppression_mask(3, [], df).all()
+    assert not _suppression_mask(4, [], df).any()
+    assert _suppression_mask(1, ["QI1"], pd.DataFrame(columns=["QI1"])).empty
+
+    with pytest.raises(ValueError):
+        _suppression_mask(0, ["QI1"], df)
+    with pytest.raises(ValueError):
+        _suppression_mask(2, ["QI1"], None)
+    with pytest.raises(KeyError):
+        _suppression_mask(2, ["missing"], df)
+
+
+def test_make_adult_k_anonymous_parameter_validation():
+    with pytest.raises(ValueError):
+        make_adult_k_anonymous(3, zip_digits=-1, age_digits=1)
+    with pytest.raises(ValueError):
+        make_adult_k_anonymous(3, zip_digits=1, age_digits=-1)
 
 
 
@@ -230,6 +289,30 @@ def test_is_l_diverse_probabilistic_and_entropy():
     assert not is_l_diverse(3, ["QI"], "S", df, type="probabilistic")
     assert is_l_diverse(2, ["QI"], "S", df, type="entropy")
     assert not is_l_diverse(3, ["QI"], "S", df, type="entropy")
+
+
+def test_is_l_diverse_edge_cases_and_validation():
+    df = pd.DataFrame({"QI": ["a", "a"], "S": ["x", "y"]})
+
+    with pytest.raises(ValueError):
+        is_l_diverse(0, ["QI"], "S", df)
+    with pytest.raises(ValueError):
+        is_l_diverse(2, ["QI"], "S", None)
+    with pytest.raises(KeyError):
+        is_l_diverse(2, ["QI"], "missing", df)
+    with pytest.raises(ValueError):
+        is_l_diverse(2, ["QI"], "S", df, type="other")
+    with pytest.raises(KeyError):
+        is_l_diverse(2, ["missing"], "S", df)
+
+    # Empty dataframe is treated as l-diverse by definition in this implementation.
+    empty_df = pd.DataFrame(columns=["QI", "S"])
+    assert is_l_diverse(2, ["QI"], "S", empty_df, type="probabilistic")
+    assert is_l_diverse(2, ["QI"], "S", empty_df, type="entropy")
+
+    # With no QIs, diversity is checked on the whole table as one group.
+    assert is_l_diverse(2, [], "S", df, type="probabilistic")
+    assert is_l_diverse(2, [], "S", df, type="entropy")
 
 
 #EX7
@@ -318,6 +401,24 @@ def test_generalize_full_adult_categorical_values():
     assert set(gen_df["Marital Status"].dropna().unique()).issubset(
         {"Married", "Not Married"}
     )
+
+
+def test_max_l_edge_cases_and_validation():
+    df = pd.DataFrame({"QI": ["a", "a", "a"], "S": ["x", "x", "y"]})
+
+    with pytest.raises(ValueError):
+        max_l(["QI"], "S", None)
+    with pytest.raises(KeyError):
+        max_l(["QI"], "missing", df)
+    with pytest.raises(ValueError):
+        max_l(["QI"], "S", df, variant="other")
+    with pytest.raises(KeyError):
+        max_l(["missing"], "S", df)
+
+    assert max_l(["QI"], "S", pd.DataFrame(columns=["QI", "S"])) == 0
+    # No QIs: evaluate diversity limits on a single global group.
+    assert max_l([], "S", df, variant="probabilistic") == 1
+    assert max_l([], "S", df, variant="entropy") == 1
 
 
 if __name__ == "__main__":
